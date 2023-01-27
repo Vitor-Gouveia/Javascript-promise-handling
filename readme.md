@@ -154,24 +154,46 @@ await main()
 
 ## Controlando fluxo com promises pt2
 
+# Dia 2
+[ref](https://dev.to/lydiahallie/javascript-visualized-promises-async-await-5gke)
+
+## Promises na call stack
+O runtime do javascript pode assim dizer pode ser quebrado em 4 partes
+
+- Call Stack
+- Web API
+- MicroTask (process.nextTick, Promsise Callback, queue microtask)
+- MacroTask (setInterval, setImmediate, setTimeout)
+
+### Call Stack
+Uma "Stack" (estrutura de programação) que contém as funções chamadas no código.
+
+Cada vez que uma função é chamada é adicionada a stack
+Cada vez que uma função retorna um valor ela sai da stack
+
+Imagine o seguinte código:
+
 ```js
-import { setTimeout } from "node:timers/promises"
-
-const task = async (name, timeout = 200) => await setTimeout(timeout, `Inicializando ${name}`)
-
-const main = async () => {
-  const services = await Promise.allSettled([
-    task("mongodb", 50),
-    task("express.js", 1000),
-    task("stripe", 200),
-  ])
-
-  services.forEach((promise) => {
-    promise.status === "fulfilled"
-      ? console.log(promise.value)
-      : console.log(promise.reason)
-  })
+function Yell() {
+  return "YELLING"
 }
 
-await main()
+function myFunc() {
+  console.log(Yell())
+}
+
+myFunc()
+```
+
+O javascript é executado em dois passos, o primeiro sendo de leitura e "caching" de valores (como funções, variáveis, definição de escopos), e o segundo sendo execução, onde o javascript entra nas funções e começa a interagir com a stack.
+
+Quando a engine do javascript lê uma função sendo chamada, como `myFunc()`, ele adiciona a invocação da função na call stack entra no corpo dessa função e adiciona cada linha de código dessa função para a call stack.
+
+```bash
+call-stack: [
+  myFunc,
+  console.log,
+  Yell,
+  returns "YELLING"
+]
 ```
