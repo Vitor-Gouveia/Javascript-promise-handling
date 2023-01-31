@@ -61,10 +61,10 @@ const main = () => {
   
   asyncTask(false)
     .then(logService)
-    .catch(error => console.log(error))
-    .finally(() => console.log("finished"))
+    .catch(error => logService(error))
+    .finally(() => logService("finished"))
 
-  console.log("Inicializando conexão com gateway de pagamento")
+  logService("Inicializando conexão com gateway de pagamento")
 }
 
 main()
@@ -152,8 +152,6 @@ const main = async () => {
 await main()
 ```
 
-## Controlando fluxo com promises pt2
-
 # Dia 2
 [ref](https://dev.to/lydiahallie/javascript-visualized-promises-async-await-5gke)
 
@@ -196,4 +194,41 @@ call-stack: [
   Yell,
   returns "YELLING"
 ]
+```
+
+# Dia 3
+## Controlando o fluxo com promises rust-like.
+Assim como em Rust, existe uma forma de lidar com valores que podem não existir construíndo uma função "unwrap". Que força o valor a sair do nossa promise. Em linguagens funcionais como Haskell esse valor pode ser chamado de <Future>.
+
+Pode-se utilizar uma funcionalidade nativa da API de Promises do Javascript chamada de `allSettled`, que retorna os valores de um `Array`de promises em um objeto `PromiseSettledResult<T>`. Que pode representar uma falha ou sucesso da promise. Trazendo os valores dessa promise para o escopo da função onde a `Promise` foi invocada.
+
+```js
+const unwrap = async (promise) => {
+  const [{ value, reason: error }] = await Promise.allSettled([promise])
+
+  return { value, error }
+}
+```
+
+Exemplo de funcionamento:
+
+```js
+function fetchUser() {
+  return new Promise((resolve) => {
+    resolve("Vitor")
+  })
+}
+
+console.log("Fetching an user...")
+
+const { error: userError, value: username } = await unwrap(fetchUser());
+
+if(userError) {
+  console.log(userError)
+  return
+}
+
+console.log(username)
+
+console.log(`User is ${username}`)
 ```
